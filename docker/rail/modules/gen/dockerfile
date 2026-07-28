@@ -1,0 +1,15 @@
+# 基础镜像
+FROM  openjdk:17
+# author
+MAINTAINER rail
+
+# 挂载目录
+VOLUME /home/rail
+# 创建目录
+RUN mkdir -p /home/rail
+# 指定路径
+WORKDIR /home/rail
+# 复制jar文件到路径
+COPY ./jar/rail-modules-gen.jar /home/rail/rail-modules-gen.jar
+# 启动代码生成服务
+ENTRYPOINT ["java","-jar","rail-modules-gen.jar"]

@@ -1,0 +1,2 @@
+com.rail.common.log.service.AsyncLogService
+com.rail.common.log.aspect.LogAspect
