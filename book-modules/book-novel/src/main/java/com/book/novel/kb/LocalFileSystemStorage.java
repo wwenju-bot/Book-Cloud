@@ -24,10 +24,11 @@ import com.book.common.core.exception.ServiceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * 知识库文件系统存储 · 本地磁盘实现。
+ * ZhiShiKu file system storage - local disk implementation.
  *
- * 本地调试和生产环境走的是同一套代码，区别只在于 book.novel.kb.root-path 配置指向的磁盘路径不同
- * （本地如 D:/book-kb-data，生产如 /data/book/kb），业务代码完全不用改。
+ * Local debugging and production environments run the same code; the only difference is the disk path
+ * pointed to by the book.novel.kb.root-path config (e.g. D:/book-kb-data locally, /data/book/kb in production).
+ * Business code never needs to change.
  *
  * @author book
  */
@@ -37,18 +38,19 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
 {
     private static final Logger log = LoggerFactory.getLogger(LocalFileSystemStorage.class);
 
-    /** 知识库目录模板，沿用 Obsidian 兼容的目录结构，详见 AGENTS.md "知识库文件命名与元数据规范" */
+    /** Knowledge base directory template, Obsidian-compatible layout, see AGENTS.md for naming spec */
     private static final String[] LAYOUT_DIRS = {
-            "00-项目配置", "01-全局架构", "02-章节内容", "03-章节优化记录", "04-创作参考资料", "05-操作日志"
+            "00-\u9879\u76ee\u914d\u7f6e", "01-\u5168\u5c40\u67b6\u6784", "02-\u7ae0\u8282\u5185\u5bb9",
+            "03-\u7ae0\u8282\u4f18\u5316\u8bb0\u5f55", "04-\u521b\u4f5c\u53c2\u8003\u8d44\u6599", "05-\u64cd\u4f5c\u65e5\u5fd7"
     };
 
-    private static final String PROJECT_CONFIG_DIR = "00-项目配置";
+    private static final String PROJECT_CONFIG_DIR = "00-\u9879\u76ee\u914d\u7f6e";
 
     private static final String PROJECT_META_FILE = "project.json";
 
     private static final int KB_TEMPLATE_VERSION = 1;
 
-    @Value("${book.novel.kb.root-path}")
+    @Value("${book.novel.kb.root-path:D:/book-kb-data}")
     private String rootPath;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -68,8 +70,8 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         }
         catch (IOException e)
         {
-            log.error("初始化项目[{}]知识库目录失败", projectId, e);
-            throw new ServiceException("初始化知识库目录失败：" + e.getMessage());
+            log.error("init project [{}] knowledge base directory failed", projectId, e);
+            throw new ServiceException("init knowledge base directory failed: " + e.getMessage());
         }
     }
 
@@ -84,18 +86,34 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         }
         catch (IOException e)
         {
-            log.error("写入知识库文件失败，projectId={}, relativePath={}", projectId, relativePath, e);
-            throw new ServiceException("写入知识库文件失败：" + e.getMessage());
+            log.error("write knowledge base file failed, projectId={}, relativePath={}", projectId, relativePath, e);
+            throw new ServiceException("write knowledge base file failed: " + e.getMessage());
         }
     }
 
-    @Override
-    public String readMarkdown(Long projectId, String relativePath)
+           @Override
+           public void writeFile(Long projectId, String relativePath, byte[] content)
+           {
+               Path target = resolveSafePath(projectId, relativePath);
+               try
+               {
+                   Files.createDirectories(target.getParent());
+                   Files.write(target, content == null ? new byte[0] : content);
+               }
+               catch (IOException e)
+               {
+                   log.error("write knowledge base binary file failed, projectId={}, relativePath={}", projectId, relativePath, e);
+                   throw new ServiceException("write knowledge base file failed: " + e.getMessage());
+               }
+           }
+
+           @Override
+           public String readMarkdown(Long projectId, String relativePath)
     {
         Path target = resolveSafePath(projectId, relativePath);
         if (!Files.exists(target))
         {
-            throw new ServiceException("文件不存在：" + relativePath);
+            throw new ServiceException("file not found: " + relativePath);
         }
         try
         {
@@ -103,8 +121,8 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         }
         catch (IOException e)
         {
-            log.error("读取知识库文件失败，projectId={}, relativePath={}", projectId, relativePath, e);
-            throw new ServiceException("读取知识库文件失败：" + e.getMessage());
+            log.error("read knowledge base file failed, projectId={}, relativePath={}", projectId, relativePath, e);
+            throw new ServiceException("read knowledge base file failed: " + e.getMessage());
         }
     }
 
@@ -125,8 +143,8 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         }
         catch (IOException e)
         {
-            log.error("列出知识库目录失败，projectId={}, relativeDir={}", projectId, relativeDir, e);
-            throw new ServiceException("列出知识库目录失败：" + e.getMessage());
+            log.error("list knowledge base directory failed, projectId={}, relativeDir={}", projectId, relativeDir, e);
+            throw new ServiceException("list knowledge base directory failed: " + e.getMessage());
         }
     }
 
@@ -136,7 +154,7 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         Path projectRoot = resolveProjectRoot(projectId);
         if (!Files.isDirectory(projectRoot))
         {
-            throw new ServiceException("项目知识库目录不存在，projectId=" + projectId);
+            throw new ServiceException("project knowledge base directory not found, projectId=" + projectId);
         }
         try
         {
@@ -160,8 +178,8 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
         }
         catch (IOException e)
         {
-            log.error("打包项目[{}]知识库失败", projectId, e);
-            throw new ServiceException("打包知识库失败：" + e.getMessage());
+            log.error("package project [{}] knowledge base failed", projectId, e);
+            throw new ServiceException("package knowledge base failed: " + e.getMessage());
         }
     }
 
@@ -186,29 +204,29 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
     {
         if (projectId == null || projectId <= 0)
         {
-            throw new ServiceException("projectId 非法");
+            throw new ServiceException("invalid projectId");
         }
         if (!StringUtils.hasText(rootPath))
         {
-            throw new ServiceException("知识库根路径未配置，请检查 Nacos 配置 book-novel-dev.yml 中的 book.novel.kb.root-path");
+            throw new ServiceException("knowledge base root path not configured, please check book.novel.kb.root-path in Nacos config book-novel-dev.yml");
         }
         return Paths.get(rootPath).resolve(String.valueOf(projectId)).normalize();
     }
 
     /**
-     * 校验并解析相对路径，防止路径穿越（如 "../../etc/passwd"）逃出项目根目录
+     * Resolve and validate a relative path, preventing path traversal (e.g. "../../etc/passwd") outside the project root.
      */
     private Path resolveSafePath(Long projectId, String relativePath)
     {
         if (!StringUtils.hasText(relativePath))
         {
-            throw new ServiceException("文件相对路径不能为空");
+            throw new ServiceException("file relative path must not be empty");
         }
         Path projectRoot = resolveProjectRoot(projectId);
         Path resolved = projectRoot.resolve(relativePath).normalize();
         if (!resolved.startsWith(projectRoot))
         {
-            throw new ServiceException("非法的文件路径：" + relativePath);
+            throw new ServiceException("illegal file path: " + relativePath);
         }
         return resolved;
     }

@@ -19,7 +19,6 @@ import com.book.common.core.web.domain.AjaxResult;
  * @author book
  */
 @RestController
-@RequestMapping("/ai")
 public class AiChatController extends BaseController
 {
     @Autowired

@@ -4,61 +4,74 @@ import java.io.File;
 import java.util.List;
 
 /**
- * 知识库文件系统存储抽象。v1 只有 {@link LocalFileSystemStorage} 一个实现，
- * 后续要接 MinIO 存储，只需新增一个实现类并调整 book.novel.kb.storage-type 配置，业务代码不用改。
+ * Knowledge base file system storage abstraction. v1 only ships one implementation,
+ * {@link LocalFileSystemStorage}. To add MinIO later, just add a new implementation and
+ * switch book.novel.kb.storage-type; business code does not need to change.
  *
  * @author book
  */
 public interface KnowledgeBaseStorage
 {
     /**
-     * 初始化项目知识库目录模板（00~05 六大目录 + 00-项目配置/project.json）
+     * Initialize a project's knowledge base directory layout (00~05 six top-level dirs +
+     * 00-project-config/project.json).
      *
-     * @param projectId 项目ID
-     * @param projectName 项目名称，写入 project.json 元数据
+     * @param projectId project id
+     * @param projectName project name, written into project.json metadata
      */
     void initProjectLayout(Long projectId, String projectName);
 
     /**
-     * 写入/覆盖一个 Markdown（或其他文本）文件
+     * Write (or overwrite) a Markdown (or other text) file.
      *
-     * @param projectId 项目ID
-     * @param relativePath 相对项目根目录的路径，如 "01-全局架构/v1-架构.md"
-     * @param content 文件内容
+     * @param projectId project id
+     * @param relativePath path relative to the project root, e.g. "01-architecture/v1.md"
+     * @param content file content
      */
     void writeMarkdown(Long projectId, String relativePath, String content);
 
     /**
-     * 读取一个文件内容
+     * Write an arbitrary binary file (used for user-uploaded raw manuscripts / reference
+     * material such as docx/pdf that are not plain text).
      *
-     * @param projectId 项目ID
-     * @param relativePath 相对项目根目录的路径
-     * @return 文件内容
+     * @param projectId project id
+     * @param relativePath path relative to the project root, e.g. "04-reference/material.docx"
+     * @param content raw file bytes
+     */
+    void writeFile(Long projectId, String relativePath, byte[] content);
+
+    /**
+     * Read a text file's content.
+     *
+     * @param projectId project id
+     * @param relativePath path relative to the project root
+     * @return file content
      */
     String readMarkdown(Long projectId, String relativePath);
 
     /**
-     * 列出某个子目录下的文件名（不递归）
+     * List file names directly under a sub-directory (non-recursive).
      *
-     * @param projectId 项目ID
-     * @param relativeDir 相对项目根目录的子目录路径，如 "02-章节内容"
-     * @return 文件名列表，目录不存在时返回空列表
+     * @param projectId project id
+     * @param relativeDir sub-directory path relative to the project root, e.g. "02-chapters"
+     * @return file name list, empty list if the directory does not exist
      */
     List<String> listFiles(Long projectId, String relativeDir);
 
     /**
-     * 将整个项目知识库目录打包为 zip
+     * Package the whole project knowledge base directory as a zip file.
      *
-     * @param projectId 项目ID
-     * @return 打包后的临时 zip 文件，调用方负责用完后删除
+     * @param projectId project id
+     * @return the packaged temp zip file; caller is responsible for deleting it afterwards
      */
     File packageAsZip(Long projectId);
 
     /**
-     * 获取项目知识库根目录的绝对路径，用于落库到 novel_project.kb_root_path
+     * Get the absolute path of the project's knowledge base root directory, used to persist
+     * novel_project.kb_root_path.
      *
-     * @param projectId 项目ID
-     * @return 绝对路径
+     * @param projectId project id
+     * @return absolute path
      */
     String getProjectRootPath(Long projectId);
 }
