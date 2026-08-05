@@ -1,0 +1,15 @@
+# 基础镜像
+FROM  openjdk:17
+# author
+MAINTAINER book
+
+# 挂载目录
+VOLUME /home/book
+# 创建目录
+RUN mkdir -p /home/book
+# 指定路径
+WORKDIR /home/book
+# 复制jar文件到路径
+COPY ./jar/book-modules-system.jar /home/book/book-modules-system.jar
+# 启动系统服务
+ENTRYPOINT ["java","-jar","book-modules-system.jar"]

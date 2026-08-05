@@ -9,6 +9,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 
 ######################################################################
+# Nacos 运行时数据，禁止提交
+nacos/data/
+nacos/logs/
 # IDE
 
 ### STS ###

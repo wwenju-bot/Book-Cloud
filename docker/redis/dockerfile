@@ -1,13 +1,13 @@
 # 基础镜像
 FROM redis
 # author
-MAINTAINER rail
+MAINTAINER book
 
 # 挂载目录
-VOLUME /home/rail/redis
+VOLUME /home/book/redis
 # 创建目录
-RUN mkdir -p /home/rail/redis
+RUN mkdir -p /home/book/redis
 # 指定路径
-WORKDIR /home/rail/redis
+WORKDIR /home/book/redis
 # 复制conf文件到路径
-COPY ./conf/redis.conf /home/rail/redis/redis.conf
+COPY ./conf/redis.conf /home/book/redis/redis.conf

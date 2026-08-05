@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.rail</groupId>
-    <artifactId>rail</artifactId>
+    <groupId>com.book</groupId>
+    <artifactId>book</artifactId>
     <version>3.6.8</version>
 
-    <name>rail</name>
-    <url>http://www.rail.vip</url>
-    <description>铁路运维可视化调度系统</description>
+    <name>book</name>
+    <url>http://www.book.vip</url>
+    <description>小说自动化创作平台</description>
 
     <properties>
-        <rail.version>3.6.8</rail.version>
+        <book.version>3.6.8</book.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
@@ -144,84 +144,84 @@
 
             <!-- 核心模块 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-core</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-core</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 接口模块 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-swagger</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-swagger</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 安全模块 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-security</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-security</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 数据脱敏 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-sensitive</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-sensitive</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 权限范围 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-datascope</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-datascope</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 多数据源 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-datasource</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-datasource</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 分布式事务 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-seata</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-seata</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 日志记录 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-log</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-log</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 缓存服务 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-common-redis</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-common-redis</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
             <!-- 系统接口 -->
             <dependency>
-                <groupId>com.rail</groupId>
-                <artifactId>rail-api-system</artifactId>
-                <version>${rail.version}</version>
+                <groupId>com.book</groupId>
+                <artifactId>book-api-system</artifactId>
+                <version>${book.version}</version>
             </dependency>
 
         </dependencies>
     </dependencyManagement>
 
     <modules>
-        <module>rail-auth</module>
-        <module>rail-gateway</module>
-        <module>rail-visual</module>
-        <module>rail-modules</module>
-        <module>rail-api</module>
-        <module>rail-common</module>
+        <module>book-auth</module>
+        <module>book-gateway</module>
+        <module>book-visual</module>
+        <module>book-modules</module>
+        <module>book-api</module>
+        <module>book-common</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -260,6 +260,12 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <!-- 项目未继承 spring-boot-starter-parent，需要显式管理 surefire 版本才能识别 JUnit 5 测试 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
                 </plugin>
             </plugins>
         </pluginManagement>

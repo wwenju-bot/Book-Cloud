@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.book.novel.mapper.NovelProjectMapper">
+
+	<resultMap type="NovelProject" id="NovelProjectResult">
+		<id     property="projectId"    column="project_id"     />
+		<result property="userId"       column="user_id"        />
+		<result property="projectName"  column="project_name"   />
+		<result property="sourceType"   column="source_type"    />
+		<result property="status"       column="status"         />
+		<result property="kbRootPath"   column="kb_root_path"   />
+		<result property="createBy"     column="create_by"      />
+		<result property="createTime"   column="create_time"    />
+		<result property="updateBy"     column="update_by"      />
+		<result property="updateTime"   column="update_time"    />
+		<result property="remark"       column="remark"         />
+	</resultMap>
+
+	<sql id="selectProjectVo">
+		select project_id, user_id, project_name, source_type, status, kb_root_path,
+			create_by, create_time, update_by, update_time, remark
+		from novel_project
+	</sql>
+
+	<select id="selectProjectList" parameterType="NovelProject" resultMap="NovelProjectResult">
+		<include refid="selectProjectVo"/>
+		<where>
+			<if test="userId != null">
+				AND user_id = #{userId}
+			</if>
+			<if test="projectName != null and projectName != ''">
+				AND project_name like concat('%', #{projectName}, '%')
+			</if>
+			<if test="sourceType != null and sourceType != ''">
+				AND source_type = #{sourceType}
+			</if>
+			<if test="status != null and status != ''">
+				AND status = #{status}
+			</if>
+		</where>
+		order by project_id desc
+	</select>
+
+	<select id="selectProjectById" parameterType="Long" resultMap="NovelProjectResult">
+		<include refid="selectProjectVo"/>
+		where project_id = #{projectId}
+	</select>
+
+	<insert id="insertProject" parameterType="NovelProject" useGeneratedKeys="true" keyProperty="projectId">
+		insert into novel_project(
+			<if test="userId != null">user_id,</if>
+			<if test="projectName != null and projectName != ''">project_name,</if>
+			<if test="sourceType != null and sourceType != ''">source_type,</if>
+			<if test="status != null and status != ''">status,</if>
+			<if test="kbRootPath != null and kbRootPath != ''">kb_root_path,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			create_time
+		)values(
+			<if test="userId != null">#{userId},</if>
+			<if test="projectName != null and projectName != ''">#{projectName},</if>
+			<if test="sourceType != null and sourceType != ''">#{sourceType},</if>
+			<if test="status != null and status != ''">#{status},</if>
+			<if test="kbRootPath != null and kbRootPath != ''">#{kbRootPath},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+			sysdate()
+		)
+	</insert>
+
+	<update id="updateProject" parameterType="NovelProject">
+		update novel_project
+		<set>
+			<if test="projectName != null and projectName != ''">project_name = #{projectName},</if>
+			<if test="sourceType != null and sourceType != ''">source_type = #{sourceType},</if>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="kbRootPath != null and kbRootPath != ''">kb_root_path = #{kbRootPath},</if>
+			<if test="remark != null">remark = #{remark},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			update_time = sysdate()
+		</set>
+		where project_id = #{projectId}
+	</update>
+
+	<delete id="deleteProjectById" parameterType="Long">
+		delete from novel_project where project_id = #{projectId}
+	</delete>
+
+	<delete id="deleteProjectByIds" parameterType="Long">
+		delete from novel_project where project_id in
+		<foreach collection="array" item="projectId" open="(" separator="," close=")">
+			#{projectId}
+		</foreach>
+	</delete>
+
+</mapper>

@@ -26,12 +26,12 @@ port(){
 
 # 启动基础环境（必须）
 base(){
-	docker-compose up -d rail-mysql rail-redis rail-nacos
+	docker-compose up -d book-mysql book-redis book-nacos
 }
 
 # 启动程序模块（必须）
 modules(){
-	docker-compose up -d rail-nginx rail-gateway rail-auth rail-modules-system
+	docker-compose up -d book-nginx book-gateway book-auth book-modules-system
 }
 
 # 关闭所有环境/模块

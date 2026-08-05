@@ -1,0 +1,3 @@
+com.book.system.api.factory.RemoteUserFallbackFactory
+com.book.system.api.factory.RemoteLogFallbackFactory
+com.book.system.api.factory.RemoteFileFallbackFactory

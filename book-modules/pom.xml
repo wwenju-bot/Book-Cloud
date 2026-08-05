@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.book</groupId>
+        <artifactId>book</artifactId>
+        <version>3.6.8</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>book-system</module>
+        <module>book-gen</module>
+        <module>book-job</module>
+        <module>book-file</module>
+        <module>book-novel</module>
+        <module>book-ai</module>
+    </modules>
+
+    <artifactId>book-modules</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        book-modules业务模块
+    </description>
+
+</project>

@@ -1,73 +1,44 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-b99b286755aef70355a7084753f89cdb7c9.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Rail v3.6.8</h1>
-<h4 align="center">基于 Vue/Element UI 和 Spring Boot/Spring Cloud & Alibaba 前后端分离的分布式微服务架构</h4>
-<p align="center">
-	<a href="https://gitee.com/y_project/Rail-Cloud/stargazers"><img src="https://gitee.com/y_project/Rail-Cloud/badge/star.svg?theme=dark"></a>
-	<a href="https://gitee.com/y_project/Rail-Cloud"><img src="https://img.shields.io/badge/Rail-v3.6.8-brightgreen.svg"></a>
-	<a href="https://gitee.com/y_project/Rail-Cloud/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
-</p>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Book-Cloud</h1>
+<h4 align="center">小说自动化创作平台微服务基座 —— 基于 RuoYi-Cloud 二次开发，Vue/Element UI + Spring Boot 3/Spring Cloud & Alibaba 前后端分离微服务架构</h4>
 
 ## 平台简介
 
-铁路运维可视化调度系统是一套全部开源的快速开发平台，毫无保留给个人及企业免费使用。
+Book-Cloud 是「小说自动化创作平台」的微服务基座，在开源脚手架 RuoYi-Cloud 的基础上二次开发而来：直接复用其账号权限、网关、文件、定时任务等成熟能力，在此之上新增面向小说创作业务的 `book-novel`（创作业务）与 `book-ai`（AI 编排）等模块。产品需求背景与技术路线详见仓库根目录的 [AGENTS.md](../AGENTS.md)。
 
-* 本仓库为Rail-Cloud的Spring Boot 3 的版本，保持同步更新。
-* 后端采用Spring Boot3、Spring Cloud & Alibaba。
-* 注册中心、配置中心选型Nacos，权限认证使用Redis。
-* 流量控制框架选型Sentinel，分布式事务选型Seata。
-* 阿里云优惠券：[点我进入](http://aly.rail.vip)，腾讯云优惠券：[点我进入](http://txy.rail.vip)&nbsp;&nbsp;
-
-# 版本分支
-
-Rail-Cloud 后端项目提供 Spring Boot 2.x / 3.x / 4.x 多版本分支的并行维护。
-
-| 名称              | 说明                      | 地址                                                      |
-| :---------------- | :------------------------ | :-------------------------------------------------------- |
-| master 默认分支   | Spring Boot 4.x (JDK 17+、Nacos 3.x) | https://gitee.com/y_project/Rail-Cloud                   |
-| springboot3 分支  | Spring Boot 3.x (JDK 17+、Nacos 3.x) | https://gitee.com/y_project/Rail-Cloud/tree/springboot3  |
-| springboot2 分支  | Spring Boot 2.x (JDK 8+、Nacos 2.x)  | https://gitee.com/y_project/Rail-Cloud/tree/springboot2  |  
-
-Rail-Cloud 前端项目提供 Vue 2.x / 3.x / JavaScript TypeScript 版本均可混用搭配
-
-| 项目名称      | **Rail-Cloud** | **Rail-Cloud-Vue3** | **Rail-Cloud-Vue3-TypeScript**   |
-| :---          | :---            | :---                 | :---                              |
-| **前端框架**  | Vue 2           | Vue 3                | Vue 3                             |
-| **脚本语言**  | JavaScript      | JavaScript           | TypeScript                        |
-| **构建工具**  | Vue CLI         | Vite                 | Vite                              |
-| **UI 组件库** | Element UI      | Element Plus         | Element Plus                      |
-| **状态管理**  | Vuex            | Pinia                | Pinia                             |
-| **路由管理**  | Vue Router 3    | Vue Router 4         | Vue Router 4                      |
-| **核心特点**  | 1. 技术栈经典稳定<br>2. 社区资料丰富<br>3. 当前维护重心已转移 | 1. 现代前端技术栈<br>2. 开发体验与性能更优<br>3. 官方主推的活跃版本 | 1. 类型加持，减少沟通成本<br>2. 开发时有提示，效率更高<br>3. 多人协作企业级开发项目 |
-| **仓库地址**  | [Rail-Cloud](https://gitee.com/y_project/Rail-Cloud) | [Rail-Cloud-Vue3](https://gitcode.com/yangzongzhuan/Rail-Cloud-Vue3) | [Rail-Cloud-Vue3-TypeScript](https://gitcode.com/yangzongzhuan/Rail-Cloud-Vue3/tree/typescript) |
+* 后端采用 Spring Boot 3、Spring Cloud & Alibaba。
+* 注册中心、配置中心选型 Nacos，权限认证使用 Redis。
+* 流量控制框架选型 Sentinel，分布式事务选型 Seata。
+* 前端管理端沿用 Vue 2 + Element UI；面向写手用户的创作工作台规划采用 Vue 3（见 AGENTS.md 技术路线）。
 
 ## 系统模块
 
 ~~~
-com.rail     
-├── rail-ui              // 前端框架 [80]
-├── rail-gateway         // 网关模块 [8080]
-├── rail-auth            // 认证中心 [9200]
-├── rail-api             // 接口模块
-│       └── rail-api-system                          // 系统接口
-├── rail-common          // 通用模块
-│       └── rail-common-core                         // 核心模块
-│       └── rail-common-datascope                    // 权限范围
-│       └── rail-common-datasource                   // 多数据源
-│       └── rail-common-log                          // 日志记录
-│       └── rail-common-redis                        // 缓存服务
-│       └── rail-common-seata                        // 分布式事务
-│       └── rail-common-security                     // 安全模块
-│       └── rail-common-sensitive                    // 数据脱敏
-│       └── rail-common-swagger                      // 系统接口
-├── rail-modules         // 业务模块
-│       └── rail-system                              // 系统模块 [9201]
-│       └── rail-gen                                 // 代码生成 [9202]
-│       └── rail-job                                 // 定时任务 [9203]
-│       └── rail-file                                // 文件服务 [9300]
-├── rail-visual          // 图形化管理模块
-│       └── rail-visual-monitor                      // 监控中心 [9100]
+com.book     
+├── book-ui              // 前端框架 [80]
+├── book-gateway         // 网关模块 [8080]
+├── book-auth            // 认证中心 [9200]
+├── book-api             // 接口模块
+│       └── book-api-system                          // 系统接口
+├── book-common          // 通用模块
+│       └── book-common-core                         // 核心模块
+│       └── book-common-datascope                    // 权限范围
+│       └── book-common-datasource                   // 多数据源
+│       └── book-common-log                          // 日志记录
+│       └── book-common-redis                        // 缓存服务
+│       └── book-common-seata                        // 分布式事务
+│       └── book-common-security                     // 安全模块
+│       └── book-common-sensitive                    // 数据脱敏
+│       └── book-common-swagger                      // 系统接口
+├── book-modules         // 业务模块
+│       └── book-system                              // 系统模块 [9201]
+│       └── book-gen                                 // 代码生成 [9202]
+│       └── book-job                                 // 定时任务 [9203]
+│       └── book-file                                // 文件服务 [9300]
+├── book-visual          // 图形化管理模块
+│       └── book-visual-monitor                      // 监控中心 [9100]
 ├──pom.xml                // 公共依赖
 ~~~
 
@@ -95,15 +66,11 @@ com.rail
 16. 在线构建器：拖动表单元素生成相应的HTML代码。
 17. 连接池监视：监视当前系统数据库连接池状态，可进行分析SQL找出系统性能瓶颈。
 
-## 在线体验
+## 本地默认账号
 
-- admin/admin123  
-- 陆陆续续收到一些打赏，为了更好的体验已用于演示服务器升级。谢谢各位小伙伴。
+- 管理后台默认账号：admin/admin123（首次部署后请及时修改）
 
-演示地址：http://rail.vip  
-文档地址：http://doc.rail.vip
-
-## 演示图
+## 界面截图
 
 <table>
     <tr>
@@ -145,6 +112,6 @@ com.rail
 </table>
 
 
-## 铁路运维可视化调度系统微服务交流群
+## 致谢
 
-QQ群： [![加入QQ群](https://img.shields.io/badge/已满-42799195-blue.svg)](https://jq.qq.com/?_wv=1027&k=yqInfq0S) [![加入QQ群](https://img.shields.io/badge/已满-170157040-blue.svg)](https://jq.qq.com/?_wv=1027&k=Oy1mb3p8) [![加入QQ群](https://img.shields.io/badge/已满-130643120-blue.svg)](https://jq.qq.com/?_wv=1027&k=rvxkJtXK) [![加入QQ群](https://img.shields.io/badge/已满-225920371-blue.svg)](https://jq.qq.com/?_wv=1027&k=0Ck3PvTe) [![加入QQ群](https://img.shields.io/badge/已满-201705537-blue.svg)](https://jq.qq.com/?_wv=1027&k=FnHHP4TT) [![加入QQ群](https://img.shields.io/badge/已满-236543183-blue.svg)](https://jq.qq.com/?_wv=1027&k=qdT1Ojpz) [![加入QQ群](https://img.shields.io/badge/已满-213618602-blue.svg)](https://jq.qq.com/?_wv=1027&k=nw3OiyXs) [![加入QQ群](https://img.shields.io/badge/已满-148794840-blue.svg)](https://jq.qq.com/?_wv=1027&k=kiU5WDls) [![加入QQ群](https://img.shields.io/badge/已满-118752664-blue.svg)](https://jq.qq.com/?_wv=1027&k=MtBy6YfT) [![加入QQ群](https://img.shields.io/badge/已满-101038945-blue.svg)](https://jq.qq.com/?_wv=1027&k=FqImHgH2) [![加入QQ群](https://img.shields.io/badge/已满-128355254-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=G4jZ4EtdT50PhnMBudTnEwgonxkXOscJ&authKey=FkGHYfoTKlGE6wHdKdjH9bVoOgQjtLP9WM%2Fj7pqGY1msoqw9uxDiBo39E2mLgzYg&noverify=0&group_code=128355254) [![加入QQ群](https://img.shields.io/badge/已满-179219821-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=irnwcXhbLOQEv1g-TwGifjNTA_f4wZiA&authKey=4bpzEwhcUY%2FvsPDHvzYn6xfoS%2FtOArvZ%2BGXzfr7O0%2FEqLfkKA%2BuCDXlzHIFg8t93&noverify=0&group_code=179219821) [![加入QQ群](https://img.shields.io/badge/已满-158753145-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=lx1uEdEDuxeM7rUvF3qmlFdqKqdJ5Z-R&authKey=rgyPW9yhhh4IIURKVFa6NgP3qiqH04WAzrJ0trsgkr3pjzm6sKIOGyA58oOjoj%2FJ&noverify=0&group_code=158753145) [![加入QQ群](https://img.shields.io/badge/112869560-blue.svg)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=Kuaw0Xdlw2Nlgn6s8h9elzuquHGxGObD&authKey=cSrQcWQ%2BzQZAFFrwxaR%2BbzcumX4WRduZnd1O6JO1dlclQMiu%2BKwxAy8t2JfNp67V&noverify=0&group_code=112869560) 点击按钮入群。
+本项目基于开源脚手架 [RuoYi-Cloud](https://gitee.com/y_project/RuoYi-Cloud) 二次开发，感谢原作者及社区贡献者。
