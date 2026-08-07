@@ -1,0 +1,402 @@
+{
+  "info": {
+    "_postman_id": "book-novel-phase1-e2e",
+    "name": "Book-Novel 阶段1 端到端",
+    "description": "原型验证闭环：登录 → 创建项目 → 上传灵感 → 解析架构 → 审核通过 → 生成第1章 → 导出 zip。\n\n前置：gateway(8080)、auth、novel、ai、Nacos、Redis、MySQL 已启动；豆包/DeepSeek Key 已在 Nacos book-ai-dev.yml 配置并重启 book-ai。\n\n用法：Import 本文件 → 环境选 Collection Variables 或改 baseUrl → 按文件夹顺序执行。带 *Tests* 的请求会自动把 token/projectId/versionId/chapterId 写入集合变量。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "username", "value": "admin" },
+    { "key": "password", "value": "admin123" },
+    { "key": "token", "value": "" },
+    { "key": "uuid", "value": "" },
+    { "key": "captchaCode", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "versionId", "value": "" },
+    { "key": "chapterId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. 认证",
+      "item": [
+        {
+          "name": "0.1 获取验证码",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set('uuid', res.uuid);",
+                  "console.log('uuid=', res.uuid);",
+                  "console.log('请根据返回的 img(base64) 算出验证码，填到集合变量 captchaCode，再跑登录');",
+                  "if (res.img) {",
+                  "  console.log('验证码图片 base64 长度=', res.img.length);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/code",
+            "description": "math 验证码。看控制台/Response 算出结果，写入集合变量 captchaCode（如 1+2=3 则填 3）。"
+          }
+        },
+        {
+          "name": "0.2 登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('login ok', () => pm.expect(res.code).to.eql(200));",
+                  "const token = res.data && (res.data.access_token || res.access_token);",
+                  "if (token) {",
+                  "  pm.collectionVariables.set('token', token);",
+                  "  console.log('token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"code\": \"{{captchaCode}}\",\n  \"uuid\": \"{{uuid}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. 项目",
+      "item": [
+        {
+          "name": "1.1 创建项目",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('create project ok', () => pm.expect(res.code).to.eql(200));",
+                  "console.log('create result=', JSON.stringify(res));",
+                  "console.log('若未返回 projectId，请接着跑 1.2 列表取最新一条写入 projectId');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectName\": \"Postman联调短篇\",\n  \"sourceType\": \"inspiration\",\n  \"remark\": \"阶段1端到端验证\"\n}"
+            },
+            "url": "{{baseUrl}}/novel/project"
+          }
+        },
+        {
+          "name": "1.2 项目列表（取最新 projectId）",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('list ok', () => pm.expect(res.code).to.eql(200));",
+                  "const rows = res.rows || (res.data && res.data.rows) || [];",
+                  "if (rows.length > 0) {",
+                  "  pm.collectionVariables.set('projectId', String(rows[0].projectId));",
+                  "  console.log('projectId=', rows[0].projectId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/novel/project/list?pageNum=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["novel", "project", "list"],
+              "query": [
+                { "key": "pageNum", "value": "1" },
+                { "key": "pageSize", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.3 项目详情",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/project/{{projectId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 上传与架构",
+      "item": [
+        {
+          "name": "2.1 上传灵感素材",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "选一个 .txt 或 .md，几百字灵感即可（阶段1只支持可读文本）"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/upload"
+          }
+        },
+        {
+          "name": "2.2 解析架构（DeepSeek，同步，可能较慢）",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('parse ok', () => pm.expect(res.code).to.eql(200));",
+                  "if (res.data && res.data.versionId) {",
+                  "  pm.collectionVariables.set('versionId', String(res.data.versionId));",
+                  "  console.log('versionId=', res.data.versionId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/architecture/parse",
+            "description": "同步调用 DeepSeek，建议 Timeout 调到 120000ms。"
+          }
+        },
+        {
+          "name": "2.3 架构版本列表",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('versions ok', () => pm.expect(res.code).to.eql(200));",
+                  "const list = res.data || [];",
+                  "if (list.length > 0) {",
+                  "  pm.collectionVariables.set('versionId', String(list[0].versionId));",
+                  "  console.log('versionId=', list[0].versionId, 'status=', list[0].reviewStatus);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/architecture/versions"
+          }
+        },
+        {
+          "name": "2.4 架构版本详情",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/architecture/version/{{versionId}}"
+          }
+        },
+        {
+          "name": "2.5 可选：人工改架构 content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"# 修订后的架构\\n\\n## 世界观\\n（可按需改）\\n\\n## 人物\\n\\n## 剧情线\\n\"\n}"
+            },
+            "url": "{{baseUrl}}/novel/architecture/version/{{versionId}}"
+          }
+        },
+        {
+          "name": "2.6 审核通过",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('review pass', () => {",
+                  "  pm.expect(res.code).to.eql(200);",
+                  "  pm.expect(res.data.reviewStatus).to.eql('approved');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"result\": \"pass\",\n  \"comment\": \"Postman 联调通过\"\n}"
+            },
+            "url": "{{baseUrl}}/novel/architecture/version/{{versionId}}/review"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 章节",
+      "item": [
+        {
+          "name": "3.1 生成第1章（豆包，同步，可能较慢）",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('generate ok', () => pm.expect(res.code).to.eql(200));",
+                  "if (res.data && res.data.chapterId) {",
+                  "  pm.collectionVariables.set('chapterId', String(res.data.chapterId));",
+                  "  console.log('chapterId=', res.data.chapterId, 'versionId=', res.data.versionId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chapterNo\": 1,\n  \"chapterTitle\": \"初入江湖\",\n  \"extraInstruction\": \"开篇节奏偏慢，注重人物出场与氛围，约2000字\"\n}"
+            },
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/chapter/generate",
+            "description": "必须先有 approved 架构。建议 Timeout 120000ms。若豆包报 model 错误，把 Nacos book-ai-dev.yml 的 model 改成方舟接入点 ep-xxx。"
+          }
+        },
+        {
+          "name": "3.2 章节列表（补 chapterId）",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('chapter list ok', () => pm.expect(res.code).to.eql(200));",
+                  "const list = res.data || [];",
+                  "if (list.length > 0) {",
+                  "  pm.collectionVariables.set('chapterId', String(list[0].chapterId));",
+                  "  console.log('chapterId=', list[0].chapterId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/chapter/list"
+          }
+        },
+        {
+          "name": "3.3 章节版本列表",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/chapter/{{chapterId}}/versions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 导出",
+      "item": [
+        {
+          "name": "4.1 导出知识库 zip",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/novel/project/{{projectId}}/export",
+            "description": "Send and Download，检查 zip 内 00~05 目录、架构 md、章节 md。"
+          }
+        }
+      ]
+    },
+    {
+      "name": "可选. AI 直连冒烟",
+      "item": [
+        {
+          "name": "DeepSeek chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modelKey\": \"deepseek\",\n  \"systemPrompt\": \"你是助手\",\n  \"userPrompt\": \"用一句话介绍你自己\"\n}"
+            },
+            "url": "{{baseUrl}}/ai/chat"
+          }
+        },
+        {
+          "name": "豆包 chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modelKey\": \"doubao\",\n  \"systemPrompt\": \"你是助手\",\n  \"userPrompt\": \"用一句话介绍你自己\"\n}"
+            },
+            "url": "{{baseUrl}}/ai/chat"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -3,7 +3,6 @@ package com.book.gateway.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -24,8 +23,10 @@ public class RouterFunctionConfiguration
     @Bean
     public RouterFunction routerFunction()
     {
+        // Do not require Accept: text/plain — browsers/axios often send application/json
+        // and would otherwise miss this route ("No static resource code").
         return RouterFunctions.route(
-                RequestPredicates.GET("/code").and(RequestPredicates.accept(MediaType.TEXT_PLAIN)),
+                RequestPredicates.GET("/code"),
                 validateCodeHandler);
     }
 }

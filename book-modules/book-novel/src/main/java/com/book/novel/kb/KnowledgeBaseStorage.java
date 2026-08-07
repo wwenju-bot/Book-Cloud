@@ -67,6 +67,15 @@ public interface KnowledgeBaseStorage
     File packageAsZip(Long projectId);
 
     /**
+     * Package knowledge base as zip, optionally only approved / publish-ready content.
+     *
+     * @param projectId project id
+     * @param approvedOnly when true, skip optimize-history drafts and non-approved architecture versions
+     * @return temp zip file
+     */
+    File packageAsZip(Long projectId, boolean approvedOnly);
+
+    /**
      * Get the absolute path of the project's knowledge base root directory, used to persist
      * novel_project.kb_root_path.
      *

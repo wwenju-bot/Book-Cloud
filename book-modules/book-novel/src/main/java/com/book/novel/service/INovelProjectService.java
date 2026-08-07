@@ -54,8 +54,17 @@ public interface INovelProjectService
     /**
      * 打包导出项目知识库目录（非管理员只能导出自己的项目）
      *
-     * @param projectId 项目ID
+     * @param projectId project id
      * @return 打包后的临时 zip 文件
      */
     File exportProject(Long projectId);
+
+    /**
+     * Export knowledge base zip.
+     *
+     * @param projectId project id
+     * @param approvedOnly only approved / publish-ready files
+     * @return temp zip
+     */
+    File exportProject(Long projectId, boolean approvedOnly);
 }

@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * RestTemplate used by book-novel to call other services (currently book-ai) by service name
- * through Nacos discovery + Spring Cloud LoadBalancer, e.g. http://book-ai/chat.
+ * RestTemplate used by book-novel to call book-ai via Nacos + LoadBalancer.
+ * Must be longer than book-ai model RestTemplate so upstream waits for LLM finish.
  *
  * @author book
  */
@@ -21,8 +21,8 @@ public class RemoteCallConfig
     public RestTemplate aiServiceRestTemplate(RestTemplateBuilder builder)
     {
         return builder
-                .connectTimeout(Duration.ofSeconds(10))
-                .readTimeout(Duration.ofSeconds(90))
+                .connectTimeout(Duration.ofSeconds(15))
+                .readTimeout(Duration.ofSeconds(210))
                 .build();
     }
 }

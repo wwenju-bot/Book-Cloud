@@ -151,6 +151,12 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
     @Override
     public File packageAsZip(Long projectId)
     {
+        return packageAsZip(projectId, false);
+    }
+
+    @Override
+    public File packageAsZip(Long projectId, boolean approvedOnly)
+    {
         Path projectRoot = resolveProjectRoot(projectId);
         if (!Files.isDirectory(projectRoot))
         {
@@ -168,6 +174,10 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
                     for (Path file : files)
                     {
                         String entryName = projectRoot.relativize(file).toString().replace(File.separatorChar, '/');
+                        if (approvedOnly && shouldSkipForApprovedOnly(entryName, file))
+                        {
+                            continue;
+                        }
                         zos.putNextEntry(new ZipEntry(entryName));
                         Files.copy(file, zos);
                         zos.closeEntry();
@@ -181,6 +191,37 @@ public class LocalFileSystemStorage implements KnowledgeBaseStorage
             log.error("package project [{}] knowledge base failed", projectId, e);
             throw new ServiceException("package knowledge base failed: " + e.getMessage());
         }
+    }
+
+    /**
+     * approvedOnly export: drop optimize drafts; keep current architecture + approved chapter files.
+     */
+    private boolean shouldSkipForApprovedOnly(String entryName, Path file)
+    {
+        if (entryName.startsWith("03-\u7ae0\u8282\u4f18\u5316\u8bb0\u5f55/"))
+        {
+            return true;
+        }
+        if (entryName.startsWith("01-\u5168\u5c40\u67b6\u6784/")
+                && !entryName.endsWith("/" + "\u5f53\u524d\u67b6\u6784.md")
+                && !entryName.equals("01-\u5168\u5c40\u67b6\u6784/\u5f53\u524d\u67b6\u6784.md"))
+        {
+            // Keep architecture version files only when frontmatter says approved
+            try
+            {
+                String text = Files.readString(file, StandardCharsets.UTF_8);
+                if (text.contains("review_status: approved"))
+                {
+                    return false;
+                }
+            }
+            catch (IOException e)
+            {
+                return true;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override

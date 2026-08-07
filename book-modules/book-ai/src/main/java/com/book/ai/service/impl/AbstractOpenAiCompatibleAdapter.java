@@ -75,13 +75,27 @@ public abstract class AbstractOpenAiCompatibleAdapter implements ModelAdapter
         }
         catch (RestClientException e)
         {
-            log.error("调用模型[{}]失败，url={}", getModelKey(), url, e);
-            throw new ServiceException(getModelKey() + " 调用失败：" + e.getMessage());
+            log.error("调用模型[{}]失败，url={}, model={}", getModelKey(), url, config.getModel(), e);
+            String detail = e.getMessage() == null ? "" : e.getMessage();
+            if (detail.contains("InvalidEndpointOrModel") || detail.contains("ModelNotOpen") || detail.contains("404"))
+            {
+                throw new ServiceException(getModelKey() + " 调用失败：模型或接入点不可用（当前 model="
+                        + config.getModel()
+                        + "）。请到火山方舟控制台开通模型，或把 book-ai-dev.yml 的 book.ai.models.doubao.model "
+                        + "改成已开通的完整模型 ID / 推理接入点 ep-xxx（也可用环境变量 DOUBAO_MODEL）。原始错误："
+                        + detail);
+            }
+            throw new ServiceException(getModelKey() + " 调用失败：" + detail);
         }
     }
 
     private Map<String, Object> buildRequestBody(ModelRequest request, AiModelProperties.ModelConfig config)
     {
+        if (!StringUtils.hasText(request.getUserPrompt()))
+        {
+            throw new ServiceException(getModelKey() + " userPrompt 不能为空");
+        }
+
         List<Map<String, String>> messages = new ArrayList<>();
         if (StringUtils.hasText(request.getSystemPrompt()))
         {
@@ -100,9 +114,18 @@ public abstract class AbstractOpenAiCompatibleAdapter implements ModelAdapter
         {
             body.put("max_tokens", request.getMaxTokens());
         }
-        if (request.getExtraParams() != null)
+        // Avoid extraParams overwriting messages/model with malformed values
+        if (request.getExtraParams() != null && !request.getExtraParams().isEmpty())
         {
-            body.putAll(request.getExtraParams());
+            for (Map.Entry<String, Object> entry : request.getExtraParams().entrySet())
+            {
+                String key = entry.getKey();
+                if ("messages".equals(key) || "model".equals(key))
+                {
+                    continue;
+                }
+                body.put(key, entry.getValue());
+            }
         }
         return body;
     }
@@ -111,7 +134,7 @@ public abstract class AbstractOpenAiCompatibleAdapter implements ModelAdapter
     {
         Map<String, String> message = new LinkedHashMap<>();
         message.put("role", role);
-        message.put("content", content);
+        message.put("content", content == null ? "" : content);
         return message;
     }
 

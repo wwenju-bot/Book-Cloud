@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.book.novel.mapper.NovelChapterMapper">
+
+	<resultMap type="NovelChapter" id="NovelChapterResult">
+		<id     property="chapterId"       column="chapter_id"        />
+		<result property="projectId"       column="project_id"        />
+		<result property="chapterNo"       column="chapter_no"        />
+		<result property="title"           column="title"             />
+		<result property="status"          column="status"            />
+		<result property="latestVersionId" column="latest_version_id" />
+		<result property="createBy"        column="create_by"         />
+		<result property="createTime"      column="create_time"       />
+		<result property="updateBy"        column="update_by"         />
+		<result property="updateTime"      column="update_time"       />
+		<result property="remark"          column="remark"            />
+	</resultMap>
+
+	<sql id="selectChapterVo">
+		select chapter_id, project_id, chapter_no, title, status, latest_version_id,
+			create_by, create_time, update_by, update_time, remark
+		from novel_chapter
+	</sql>
+
+	<select id="selectChapterById" parameterType="Long" resultMap="NovelChapterResult">
+		<include refid="selectChapterVo"/>
+		where chapter_id = #{chapterId}
+	</select>
+
+	<select id="selectChapterByProjectIdAndNo" resultMap="NovelChapterResult">
+		<include refid="selectChapterVo"/>
+		where project_id = #{projectId} and chapter_no = #{chapterNo}
+	</select>
+
+	<select id="selectChaptersByProjectId" parameterType="Long" resultMap="NovelChapterResult">
+		<include refid="selectChapterVo"/>
+		where project_id = #{projectId}
+		order by chapter_no asc
+	</select>
+
+	<insert id="insertChapter" parameterType="NovelChapter" useGeneratedKeys="true" keyProperty="chapterId">
+		insert into novel_chapter(
+			project_id, chapter_no, title, status, latest_version_id, create_by, create_time
+		)values(
+			#{projectId}, #{chapterNo}, #{title}, #{status}, #{latestVersionId}, #{createBy}, sysdate()
+		)
+	</insert>
+
+	<update id="updateChapter" parameterType="NovelChapter">
+		update novel_chapter
+		<set>
+			<if test="title != null and title != ''">title = #{title},</if>
+			<if test="status != null and status != ''">status = #{status},</if>
+			<if test="latestVersionId != null">latest_version_id = #{latestVersionId},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			update_time = sysdate()
+		</set>
+		where chapter_id = #{chapterId}
+	</update>
+
+</mapper>

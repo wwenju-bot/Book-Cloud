@@ -10,6 +10,7 @@ import com.book.common.core.utils.DateUtils;
 import com.book.common.core.utils.StringUtils;
 import com.book.common.security.utils.SecurityUtils;
 import com.book.novel.domain.NovelProject;
+import com.book.novel.kb.KbOperationLogger;
 import com.book.novel.kb.KnowledgeBaseStorage;
 import com.book.novel.mapper.NovelProjectMapper;
 import com.book.novel.service.INovelProjectService;
@@ -27,6 +28,9 @@ public class NovelProjectServiceImpl implements INovelProjectService
 
     @Autowired
     private KnowledgeBaseStorage knowledgeBaseStorage;
+
+    @Autowired
+    private KbOperationLogger kbOperationLogger;
 
     @Override
     public List<NovelProject> selectProjectList(NovelProject project)
@@ -99,8 +103,16 @@ public class NovelProjectServiceImpl implements INovelProjectService
     @Override
     public File exportProject(Long projectId)
     {
+        return exportProject(projectId, false);
+    }
+
+    @Override
+    public File exportProject(Long projectId, boolean approvedOnly)
+    {
         checkOwnership(selectExistingById(projectId));
-        return knowledgeBaseStorage.packageAsZip(projectId);
+        File zip = knowledgeBaseStorage.packageAsZip(projectId, approvedOnly);
+        kbOperationLogger.log(projectId, "export", "approvedOnly=" + approvedOnly);
+        return zip;
     }
 
     private NovelProject selectExistingById(Long projectId)

@@ -53,6 +53,12 @@ public class AiModelProperties
         /** 调用超时时间（毫秒） */
         private int timeout = 60000;
 
+        /** Whether this model participates in routing / multi-candidate generation */
+        private boolean enabled = true;
+
+        /** Higher priority is preferred when selecting primary / listing candidates */
+        private int priority = 0;
+
         public String getBaseUrl()
         {
             return baseUrl;
@@ -91,6 +97,26 @@ public class AiModelProperties
         public void setTimeout(int timeout)
         {
             this.timeout = timeout;
+        }
+
+        public boolean isEnabled()
+        {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled)
+        {
+            this.enabled = enabled;
+        }
+
+        public int getPriority()
+        {
+            return priority;
+        }
+
+        public void setPriority(int priority)
+        {
+            this.priority = priority;
         }
     }
 }

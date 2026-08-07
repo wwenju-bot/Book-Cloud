@@ -2,6 +2,8 @@ package com.book.novel.service;
 
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
+import com.book.novel.domain.ArchitectureDiffResult;
+import com.book.novel.domain.ArchitectureReviewRequest;
 import com.book.novel.domain.NovelArchitectureVersion;
 
 /**
@@ -23,14 +25,27 @@ public interface INovelArchitectureService
     String uploadMaterial(Long projectId, MultipartFile file);
 
     /**
-     * Parse all reference material under 04-reference-material/ into a structured
-     * architecture outline via DeepSeek, write it to the knowledge base and insert a new
-     * novel_architecture_version record (synchronous call in phase 1, see AGENTS.md).
+     * List reference material file names under 04-创作参考资料/ for the project.
      *
      * @param projectId project id
-     * @return the newly created architecture version
+     * @return file names (not full paths), sorted
      */
-    NovelArchitectureVersion parseArchitecture(Long projectId);
+    List<String> listMaterials(Long projectId);
+
+    /**
+     * Submit async architecture parse; returns taskId immediately.
+     */
+    Long submitParseArchitecture(Long projectId);
+
+    /**
+     * Submit async architecture optimize from a version; returns taskId.
+     */
+    Long submitOptimizeArchitecture(Long versionId);
+
+    /**
+     * Line-level diff between two architecture versions.
+     */
+    ArchitectureDiffResult diffVersions(Long versionId, Long compareToId);
 
     /**
      * Get an architecture version by id (ownership checked against the current user).
@@ -41,4 +56,15 @@ public interface INovelArchitectureService
      * List all architecture versions of a project, newest first.
      */
     List<NovelArchitectureVersion> selectVersionsByProjectId(Long projectId);
+
+    /**
+     * Manually edit architecture version content; syncs the knowledge base Markdown file
+     * and resets review_status to pending.
+     */
+    NovelArchitectureVersion updateVersionContent(Long versionId, String content);
+
+    /**
+     * Review an architecture version (pass / reject). On pass, refreshes 当前架构.md.
+     */
+    NovelArchitectureVersion reviewVersion(Long versionId, ArchitectureReviewRequest request);
 }

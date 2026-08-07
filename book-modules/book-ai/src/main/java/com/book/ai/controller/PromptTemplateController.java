@@ -28,6 +28,7 @@ public class PromptTemplateController extends BaseController
     public AjaxResult render(@Validated @RequestBody PromptRenderRequest request)
     {
         String rendered = promptTemplateService.renderPrompt(request.getScenario(), request.getVariables());
-        return success(rendered);
+        // Must use (msg, data): success(String) overload treats the prompt as msg and leaves data null.
+        return AjaxResult.success("操作成功", rendered);
     }
 }

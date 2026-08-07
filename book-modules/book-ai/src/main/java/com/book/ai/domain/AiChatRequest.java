@@ -1,16 +1,13 @@
 package com.book.ai.domain;
 
-import jakarta.validation.constraints.NotBlank;
-
 /**
- * /ai/chat 接口入参：在 {@link ModelRequest} 基础上多一个 modelKey 用于选择适配器
+ * /chat request: {@link ModelRequest} plus modelKey for adapter selection.
  *
  * @author book
  */
 public class AiChatRequest extends ModelRequest
 {
-    /** 模型标识，如 deepseek / doubao */
-    @NotBlank(message = "modelKey 不能为空")
+    /** Model key; blank = primary from ModelRouterService */
     private String modelKey;
 
     public String getModelKey()

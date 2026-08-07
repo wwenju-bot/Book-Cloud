@@ -41,6 +41,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		select ifnull(max(version_no), 0) from novel_architecture_version where project_id = #{projectId}
 	</select>
 
+	<select id="selectLatestApprovedByProjectId" parameterType="Long" resultMap="NovelArchitectureVersionResult">
+		<include refid="selectVersionVo"/>
+		where project_id = #{projectId} and review_status = 'approved'
+		order by version_no desc
+		limit 1
+	</select>
+
 	<insert id="insertVersion" parameterType="NovelArchitectureVersion" useGeneratedKeys="true" keyProperty="versionId">
 		insert into novel_architecture_version(
 			project_id, version_no, content, source, review_status, kb_file_path, create_by, create_time
@@ -53,8 +60,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		update novel_architecture_version
 		<set>
 			<if test="content != null">content = #{content},</if>
+			<if test="source != null and source != ''">source = #{source},</if>
 			<if test="reviewStatus != null and reviewStatus != ''">review_status = #{reviewStatus},</if>
 			<if test="reviewComment != null">review_comment = #{reviewComment},</if>
+			<if test="kbFilePath != null and kbFilePath != ''">kb_file_path = #{kbFilePath},</if>
 			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
 			update_time = sysdate()
 		</set>

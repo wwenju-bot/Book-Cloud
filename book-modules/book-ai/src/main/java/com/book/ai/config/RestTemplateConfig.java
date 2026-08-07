@@ -1,14 +1,14 @@
 package com.book.ai.config;
 
+import java.time.Duration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
-
 /**
- * 调用 DeepSeek/豆包等外部模型接口使用的 RestTemplate，统一设置连接/读取超时
+ * RestTemplate for calling DeepSeek / Doubao APIs.
+ * Read timeout must cover long architecture/chapter generations (Doubao often >60s).
  *
  * @author book
  */
@@ -19,8 +19,8 @@ public class RestTemplateConfig
     public RestTemplate modelRestTemplate(RestTemplateBuilder builder)
     {
         return builder
-                .connectTimeout(Duration.ofSeconds(10))
-                .readTimeout(Duration.ofSeconds(60))
+                .connectTimeout(Duration.ofSeconds(15))
+                .readTimeout(Duration.ofSeconds(180))
                 .build();
     }
 }

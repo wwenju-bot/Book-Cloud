@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.book.novel.mapper.NovelChapterVersionMapper">
+
+	<resultMap type="NovelChapterVersion" id="NovelChapterVersionResult">
+		<id     property="versionId"     column="version_id"     />
+		<result property="chapterId"     column="chapter_id"     />
+		<result property="versionNo"     column="version_no"     />
+		<result property="content"       column="content"        />
+		<result property="modelSource"   column="model_source"   />
+		<result property="optimizeRound" column="optimize_round" />
+		<result property="score"         column="score"          />
+		<result property="reviewStatus"  column="review_status"  />
+		<result property="kbFilePath"    column="kb_file_path"   />
+		<result property="createBy"      column="create_by"      />
+		<result property="createTime"    column="create_time"    />
+		<result property="updateBy"      column="update_by"      />
+		<result property="updateTime"    column="update_time"    />
+		<result property="remark"        column="remark"         />
+	</resultMap>
+
+	<sql id="selectVersionVo">
+		select version_id, chapter_id, version_no, content, model_source, optimize_round, score, review_status, kb_file_path,
+			create_by, create_time, update_by, update_time, remark
+		from novel_chapter_version
+	</sql>
+
+	<select id="selectVersionById" parameterType="Long" resultMap="NovelChapterVersionResult">
+		<include refid="selectVersionVo"/>
+		where version_id = #{versionId}
+	</select>
+
+	<select id="selectVersionsByChapterId" parameterType="Long" resultMap="NovelChapterVersionResult">
+		<include refid="selectVersionVo"/>
+		where chapter_id = #{chapterId}
+		order by optimize_round desc, score desc, version_no desc
+	</select>
+
+	<select id="selectMaxVersionNo" parameterType="Long" resultType="Integer">
+		select ifnull(max(version_no), 0) from novel_chapter_version where chapter_id = #{chapterId}
+	</select>
+
+	<select id="selectMaxOptimizeRound" parameterType="Long" resultType="Integer">
+		select ifnull(max(optimize_round), 0) from novel_chapter_version where chapter_id = #{chapterId}
+	</select>
+
+	<insert id="insertVersion" parameterType="NovelChapterVersion" useGeneratedKeys="true" keyProperty="versionId">
+		insert into novel_chapter_version(
+			chapter_id, version_no, content, model_source, optimize_round, score, review_status, kb_file_path, create_by, create_time, remark
+		)values(
+			#{chapterId}, #{versionNo}, #{content}, #{modelSource}, #{optimizeRound}, #{score}, #{reviewStatus}, #{kbFilePath}, #{createBy}, sysdate(), #{remark}
+		)
+	</insert>
+
+	<update id="updateVersion" parameterType="NovelChapterVersion">
+		update novel_chapter_version
+		<set>
+			<if test="content != null">content = #{content},</if>
+			<if test="modelSource != null and modelSource != ''">model_source = #{modelSource},</if>
+			<if test="optimizeRound != null">optimize_round = #{optimizeRound},</if>
+			<if test="score != null">score = #{score},</if>
+			<if test="reviewStatus != null and reviewStatus != ''">review_status = #{reviewStatus},</if>
+			<if test="kbFilePath != null and kbFilePath != ''">kb_file_path = #{kbFilePath},</if>
+			<if test="remark != null">remark = #{remark},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			update_time = sysdate()
+		</set>
+		where version_id = #{versionId}
+	</update>
+
+</mapper>

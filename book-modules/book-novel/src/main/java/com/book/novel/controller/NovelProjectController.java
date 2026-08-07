@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.book.common.core.utils.DateUtils;
 import com.book.common.core.web.controller.BaseController;
@@ -99,10 +100,11 @@ public class NovelProjectController extends BaseController
     @RequiresPermissions("novel:project:export")
     @Log(title = "创作项目", businessType = BusinessType.EXPORT)
     @GetMapping("/{projectId}/export")
-    public void export(HttpServletResponse response, @PathVariable Long projectId) throws Exception
+    public void export(HttpServletResponse response, @PathVariable Long projectId,
+            @RequestParam(value = "approvedOnly", defaultValue = "false") boolean approvedOnly) throws Exception
     {
         NovelProject project = projectService.selectProjectById(projectId);
-        File zipFile = projectService.exportProject(projectId);
+        File zipFile = projectService.exportProject(projectId, approvedOnly);
         try
         {
             String fileName = URLEncoder.encode(

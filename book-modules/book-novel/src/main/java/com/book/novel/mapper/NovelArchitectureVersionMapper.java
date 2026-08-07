@@ -26,6 +26,11 @@ public interface NovelArchitectureVersionMapper
     Integer selectMaxVersionNo(Long projectId);
 
     /**
+     * Select the latest approved architecture version of a project, or null if none.
+     */
+    NovelArchitectureVersion selectLatestApprovedByProjectId(Long projectId);
+
+    /**
      * Insert a new architecture version.
      */
     int insertVersion(NovelArchitectureVersion version);

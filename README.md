@@ -11,7 +11,7 @@ Book-Cloud 是「小说自动化创作平台」的微服务基座，在开源脚
 * 后端采用 Spring Boot 3、Spring Cloud & Alibaba。
 * 注册中心、配置中心选型 Nacos，权限认证使用 Redis。
 * 流量控制框架选型 Sentinel，分布式事务选型 Seata。
-* 前端管理端沿用 Vue 2 + Element UI；面向写手用户的创作工作台规划采用 Vue 3（见 AGENTS.md 技术路线）。
+* 前端管理端沿用 Vue 2 + Element UI；面向写手用户的创作工作台见 `book-workstation/`（Vue 3 + Vite + Element Plus）。
 
 ## 系统模块
 
